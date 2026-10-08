@@ -1,1 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Smart Digital Card Portal</title>
+  <style>
+    :root { --bg: #F8FAFC; --surface: #FFFFFF; --text: #0F172A; --primary: #2563EB; --success: #16A34A; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+    body { background-color: var(--bg); color: var(--text); padding: 2rem 1rem; display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 900px; display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+    @media (max-width: 768px) { .container { grid-template-columns: 1fr; } }
+    .card-panel { background: var(--surface); border: 1px solid #E2E8F0; border-radius: 8px; padding: 1.5rem; }
+    h2 { font-size: 1.25rem; margin-bottom: 1rem; }
+    .form-group { margin-bottom: 1rem; }
+    label { display: block; font-size: 0.875rem; color: #64748B; margin-bottom: 0.25rem; }
+    input { width: 100%; padding: 0.625rem; border: 1px solid #E2E8F0; border-radius: 8px; }
+    button { width: 100%; padding: 0.75rem; background: var(--primary); color: white; border: none; border-radius: 8px; cursor: pointer; }
+    .split-box { background: var(--bg); border: 1px solid #E2E8F0; border-radius: 8px; padding: 1rem; margin-top: 1rem; font-size: 0.875rem; }
+    .split-row { display: flex; justify-content: space-between; margin-bottom: 0.5rem; }
+  </style>
+</head>
+<body>
+<div class="container">
+  <!-- Registration Panel -->
+  <div class="card-panel">
+    <h2>Register Smart Card (₹21)</h2>
+    <form id="regForm">
+      <div class="form-group"><label>Full Name</label><input type="text" id="name" required></div>
+      <div class="form-group"><label>Email</label><input type="email" id="email" required></div>
+      <div class="form-group"><label>Phone</label><input type="tel" id="phone" required></div>
+      <div class="form-group"><label>Your UPI ID (For Commission)</label><input type="text" id="upiId" required></div>
+      <div class="form-group"><label>Designation</label><input type="text" id="designation"></div>
+      <div class="form-group"><label>Company Name</label><input type="text" id="companyName"></div>
+      <div class="form-group"><label>Referral Code (Optional)</label><input type="text" id="referredBy" placeholder="SDCXXXXXX"></div>
+      <button type="submit">Pay ₹21 & Activate Card</button>
+    </form>
+  </div>
+
+  <!-- Result Panel -->
+  <div class="card-panel">
+    <h2>Payment Logic Preview</h2>
+    <div id="paymentSplit" class="split-box" style="display:none;">
+      <div style="font-weight:600; margin-bottom: 0.5rem;">₹21 Payment Auto-Split</div>
+      <div class="split-row"><span>Admin Fee (Ramji91221m@okicici)</span><span>₹5.00</span></div>
+      <div class="split-row"><span id="uplineLabel">Upline Commission</span><span>₹10.00</span></div>
+      <div class="split-row"><span>Server Infrastructure</span><span>₹6.00</span></div>
+      <div class="split-row" style="font-weight:bold;"><span>Total Amount</span><span>₹21.00</span></div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById('regForm').addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const payload = {
+      name: document.getElementById('name').value,
+      email: document.getElementById('email').value,
+      phone: document.getElementById('phone').value,
+      upiId: document.getElementById('upiId').value,
+      designation: document.getElementById('designation').value,
+      companyName: document.getElementById('companyName').value,
+      referredBy: document.getElementById('referredBy').value || null
+    };
+
+    try {
+      // यह रिक्वेस्ट Render वाले बैकएंड पर जाएगी
+      const res = await fetch('/api/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Registration Successful! Digital Card Generated.');
+        document.getElementById('uplineLabel').innerText = `Upline (${data.paymentSplit.uplineAllocation.upi})`;
+        document.getElementById('paymentSplit').style.display = 'block';
+      }
+    } catch (err) {
+      alert('Error connecting to backend server.');
+    }
+  });
+</script>
+</body>
+</html>
 
